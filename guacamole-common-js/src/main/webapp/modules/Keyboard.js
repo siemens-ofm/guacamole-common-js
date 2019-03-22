@@ -1291,8 +1291,7 @@ Guacamole.Keyboard = function Keyboard(element) {
      */
     this.listenTo = function listenTo(element) {
 
-        // When key pressed
-        element.addEventListener("keydown", function(e) {
+        var keydownListener = function(e) {
 
             // Only intercept if handler set
             if (!guac_keyboard.onkeydown) return;
@@ -1320,10 +1319,9 @@ Guacamole.Keyboard = function Keyboard(element) {
             if (interpret_events())
                 e.preventDefault();
 
-        }, true);
+        }
 
-        // When key pressed
-        element.addEventListener("keypress", function(e) {
+        var keypressListener = function(e) {
 
             // Only intercept if handler set
             if (!guac_keyboard.onkeydown && !guac_keyboard.onkeyup) return;
@@ -1346,10 +1344,9 @@ Guacamole.Keyboard = function Keyboard(element) {
             if (interpret_events())
                 e.preventDefault();
 
-        }, true);
+        }
 
-        // When key released
-        element.addEventListener("keyup", function(e) {
+        var keyupListener = function(e) {
 
             // Only intercept if handler set
             if (!guac_keyboard.onkeyup) return;
@@ -1371,7 +1368,7 @@ Guacamole.Keyboard = function Keyboard(element) {
             eventLog.push(keyupEvent);
             interpret_events();
 
-        }, true);
+        }
 
         /**
          * Handles the given "input" event, typing the data within the input text.
@@ -1424,10 +1421,24 @@ Guacamole.Keyboard = function Keyboard(element) {
 
         };
 
+        // When key pressed
+        element.addEventListener("keydown", keydownListener, true);
+        // When key pressed
+        element.addEventListener("keypress", keypressListener, true);
+        // When key released
+        element.addEventListener("keyup", keyupListener, true);
+
         // Automatically type text entered into the wrapped field
         element.addEventListener("input", handleInput, false);
         element.addEventListener("compositionend", handleComposition, false);
 
+        this.unbindListener = function () {
+            element.removeEventListener("keydown", keydownListener, true);
+            element.removeEventListener("keypress", keypressListener, true);
+            element.removeEventListener("keyup", keyupListener, true);
+            element.removeEventListener("input", handleInput);
+            element.removeEventListener("compositionend", handleComposition);
+        }
     };
 
     // Listen to given element, if any
